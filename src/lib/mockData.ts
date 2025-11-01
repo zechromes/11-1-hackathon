@@ -821,8 +821,8 @@ export const mockPatientRiskData: PatientRiskData[] = [
   },
   {
     patientId: '3',
-    patientName: 'Mike Wilson',
-    email: 'mike.wilson@example.com',
+    patientName: 'Palm',
+    email: 'rsuksawasdi@gmail.com',
     injury: 'Spine Rehabilitation',
     weeksInTherapy: 12,
     data: {
@@ -840,8 +840,8 @@ export const mockPatientRiskData: PatientRiskData[] = [
   },
   {
     patientId: '4',
-    patientName: 'Emma Davis',
-    email: 'emma.davis@example.com',
+    patientName: 've',
+    email: 'vedrosuwandi@gmail.com',
     injury: 'Ankle Rehabilitation',
     weeksInTherapy: 4,
     data: {
@@ -859,8 +859,8 @@ export const mockPatientRiskData: PatientRiskData[] = [
   },
   {
     patientId: '5',
-    patientName: 'Carlos Rodriguez',
-    email: 'carlos.r@example.com',
+    patientName: 'Ge',
+    email: 'gegeardiansyah@gmail.com',
     injury: 'ACL Tear Recovery',
     weeksInTherapy: 8,
     data: {

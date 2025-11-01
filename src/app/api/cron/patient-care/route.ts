@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     console.log('🧪 Manual patient care analysis triggered...')
 
     // Call the same logic as GET
-    const mockRequest = new NextRequest('http://localhost:3000/api/cron/patient-care', {
+    const mockRequest = new NextRequest(`${process.env.NEXT_PUBLIC_APP_URL || 'https://healing-together-ruddy.vercel.app'}/api/cron/patient-care`, {
       headers: {
         'authorization': `Bearer ${process.env.CRON_SECRET || 'demo-secret'}`
       }

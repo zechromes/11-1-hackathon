@@ -93,7 +93,7 @@ export function formatEmailAsHTML(plainText: string): string {
   // Wrap in email template
   return `
     <div style="max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151;">
-      <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+      <div style="background: #8573bd; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
         <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Recovery Companion</h1>
         <p style="color: #e0e7ff; margin: 8px 0 0 0; font-size: 14px;">Your journey to recovery, together</p>
       </div>

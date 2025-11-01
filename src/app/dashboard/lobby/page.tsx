@@ -3,9 +3,9 @@
 import { lobbyPosts } from '@/lib/mockData'
 import { useParty } from '@/lib/PartyContext'
 import { cn } from '@/lib/utils'
-import { Heart, Image, MessageCircle, Send, Smile, User, Users, Calendar, ArrowRight, LogOut } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowRight, Calendar, Heart, Image, LogOut, MessageCircle, Send, Smile, User, Users } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function LobbyPage() {
   const { joinedParty, setJoinedParty } = useParty()
@@ -70,7 +70,7 @@ export default function LobbyPage() {
           </p>
           <Link
             href="/dashboard/discover"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="inline-flex items-center px-6 py-3 bg-[#8573bd] text-white rounded-lg hover:bg-[#E8B98A] transition-colors font-medium"
           >
             Discover Parties
             <ArrowRight className="w-5 h-5 ml-2" />
@@ -102,7 +102,7 @@ export default function LobbyPage() {
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-2">
               <h1 className="text-3xl font-bold text-gray-900">{joinedParty.name}</h1>
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-[#EAE6F5] text-[#8573bd] rounded-full text-sm font-medium">
                 {joinedParty.category}
               </span>
             </div>
@@ -137,7 +137,7 @@ export default function LobbyPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <form onSubmit={handleSubmitPost}>
           <div className="flex items-start space-x-4">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-[#8573bd] rounded-full flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-white" />
             </div>
 
@@ -174,7 +174,7 @@ export default function LobbyPage() {
                   className={cn(
                     "flex items-center px-4 py-2 rounded-lg font-medium transition-colors",
                     newPost.trim()
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      ? "bg-[#8573bd] text-white hover:bg-[#E8B98A]"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   )}
                 >
@@ -202,7 +202,7 @@ export default function LobbyPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2 mb-2">
                   <h3 className="font-semibold text-gray-900">{post.author.name}</h3>
-                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                  <span className="px-2 py-1 bg-[#EAE6F5] text-[#8573bd] text-xs rounded-full">
                     {post.author.injuryType}
                   </span>
                   <span className="text-gray-400">·</span>
@@ -239,7 +239,7 @@ export default function LobbyPage() {
                     <span className="text-sm">{post.likes}</span>
                   </button>
 
-                  <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-500 transition-colors">
+                  <button className="flex items-center space-x-2 text-gray-500 hover:text-[#8573bd] transition-colors">
                     <MessageCircle className="w-4 h-4" />
                     <span className="text-sm">{post.comments}</span>
                   </button>

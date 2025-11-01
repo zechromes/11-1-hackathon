@@ -22,7 +22,7 @@ export default function LobbyPreview() {
         <h2 className="text-xl font-semibold text-gray-900">Community Hub</h2>
         <Link
           href="/dashboard/lobby"
-          className="flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors"
+          className="flex items-center text-sm text-[#8573bd] hover:text-[#E8B98A] transition-colors"
         >
           View All
           <ArrowRight className="w-4 h-4 ml-1" />
@@ -36,7 +36,7 @@ export default function LobbyPreview() {
             className="p-4 border border-gray-100 rounded-lg hover:border-gray-200 transition-colors"
           >
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-[#8573bd] rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="w-4 h-4 text-white" />
               </div>
 
@@ -57,7 +57,7 @@ export default function LobbyPreview() {
                     <Heart className="w-3 h-3" />
                     <span>{post.likes}</span>
                   </button>
-                  <button className="flex items-center space-x-1 hover:text-blue-500 transition-colors">
+                  <button className="flex items-center space-x-1 hover:text-[#8573bd] transition-colors">
                     <MessageCircle className="w-3 h-3" />
                     <span>{post.comments}</span>
                   </button>

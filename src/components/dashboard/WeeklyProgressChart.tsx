@@ -18,7 +18,7 @@ export default function WeeklyProgressChart() {
           <p className="text-sm text-gray-600">
             Completed: {data.completed}/{data.total} tasks
           </p>
-          <p className="text-sm text-blue-600">
+          <p className="text-sm text-[#8573bd]">
             Completion Rate: {data.completionRate}%
           </p>
         </div>
@@ -70,7 +70,7 @@ export default function WeeklyProgressChart() {
 
       <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
+          <div className="w-3 h-3 bg-[#8573bd] rounded mr-2"></div>
           <span className="text-gray-600">Completed</span>
         </div>
         <div className="flex items-center">
@@ -80,26 +80,26 @@ export default function WeeklyProgressChart() {
       </div>
 
       {/* 周总结 */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-medium text-blue-900 mb-2">Weekly Summary</h3>
+      <div className="mt-6 p-4 bg-[#EAE6F5] rounded-lg">
+        <h3 className="font-medium text-gray-900 mb-2">Weekly Summary</h3>
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div className="text-center">
-            <div className="text-lg font-semibold text-blue-700">
+            <div className="text-lg font-semibold text-[#8573bd]">
               {data.reduce((sum, day) => sum + day.completed, 0)}
             </div>
-            <div className="text-blue-600">Total Completed</div>
+            <div className="text-gray-700">Total Completed</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-blue-700">
+            <div className="text-lg font-semibold text-[#8573bd]">
               {Math.round(data.reduce((sum, day) => sum + day.completionRate, 0) / data.length)}%
             </div>
-            <div className="text-blue-600">Average Rate</div>
+            <div className="text-gray-700">Average Rate</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-blue-700">
+            <div className="text-lg font-semibold text-[#8573bd]">
               {data.filter(day => day.completionRate === 100).length}
             </div>
-            <div className="text-blue-600">Perfect Days</div>
+            <div className="text-gray-700">Perfect Days</div>
           </div>
         </div>
       </div>

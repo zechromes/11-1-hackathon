@@ -102,7 +102,7 @@ export default function Sidebar() {
             className={cn(
               "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors",
               isChildActive
-                ? "bg-blue-50 text-blue-700"
+                ? "bg-[#EAE6F5] text-[#8573bd]"
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
             )}
           >
@@ -129,7 +129,7 @@ export default function Sidebar() {
                       className={cn(
                         "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                         isChildActive
-                          ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+                          ? "bg-[#EAE6F5] text-[#8573bd] border-r-2 border-[#8573bd]"
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                       )}
                     >
@@ -152,7 +152,7 @@ export default function Sidebar() {
           className={cn(
             "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
             isActive
-              ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+              ? "bg-[#EAE6F5] text-[#8573bd] border-r-2 border-[#8573bd]"
               : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
@@ -168,7 +168,7 @@ export default function Sidebar() {
       {/* 用户信息区域 */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#8573bd] rounded-full flex items-center justify-center">
             <User className="w-6 h-6 text-white" />
           </div>
           <div>

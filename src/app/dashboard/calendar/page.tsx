@@ -3,55 +3,7 @@
 import { addMonths, eachDayOfInterval, endOfMonth, format, isSameDay, isSameMonth, startOfMonth, subMonths } from 'date-fns'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, User } from 'lucide-react'
 import { useState } from 'react'
-
-// Mock calendar event data
-const calendarEvents = [
-  {
-    id: '1',
-    title: 'Physical Therapy',
-    date: new Date(2024, 10, 1, 14, 0), // 11月1日 14:00
-    duration: 60,
-    type: 'therapy',
-    location: 'Rehabilitation Center A',
-    therapist: 'Dr. Li'
-  },
-  {
-    id: '2',
-    title: 'Follow-up Appointment',
-    date: new Date(2024, 10, 5, 9, 30), // 11月5日 9:30
-    duration: 30,
-    type: 'checkup',
-    location: 'Orthopedic Clinic',
-    doctor: 'Dr. Wang'
-  },
-  {
-    id: '3',
-    title: 'Rehabilitation Training',
-    date: new Date(2024, 10, 8, 16, 0), // 11月8日 16:00
-    duration: 45,
-    type: 'exercise',
-    location: 'Training Room B',
-    trainer: 'Coach Zhang'
-  },
-  {
-    id: '4',
-    title: 'Nutrition Consultation',
-    date: new Date(2024, 10, 12, 10, 0), // 11月12日 10:00
-    duration: 30,
-    type: 'consultation',
-    location: 'Nutrition Department',
-    nutritionist: 'Nutritionist Chen'
-  },
-  {
-    id: '5',
-    title: 'Physical Therapy',
-    date: new Date(2024, 10, 15, 14, 0), // 11月15日 14:00
-    duration: 60,
-    type: 'therapy',
-    location: 'Rehabilitation Center A',
-    therapist: 'Dr. Li'
-  }
-]
+import { useCalendar } from '@/lib/CalendarContext'
 
 const eventTypeColors = {
   therapy: 'bg-[#EAE6F5] text-[#8573bd] border-[#8573bd]',
@@ -68,6 +20,7 @@ const eventTypeNames = {
 }
 
 export default function CalendarPage() {
+  const { events: calendarEvents } = useCalendar()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
 

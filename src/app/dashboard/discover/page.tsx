@@ -90,6 +90,7 @@ export default function DiscoverPage() {
     if (showAISection && !aiRecommendations) {
       fetchAIRecommendations()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAISection])
 
   // 查看匹配详情
@@ -179,7 +180,7 @@ export default function DiscoverPage() {
             </button>
           </div>
           <p className="mb-4 opacity-90">
-            Based on your recovery progress, training intensity, and goals, we've selected these groups for you:
+            Based on your recovery progress, training intensity, and goals, we&apos;ve selected these groups for you:
           </p>
 
           {loadingRecommendations ? (

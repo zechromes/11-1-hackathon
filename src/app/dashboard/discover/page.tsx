@@ -1,10 +1,11 @@
 'use client'
 
-import { availableParties, userInterests, currentUser, friends, globalPublicChat, PublicChatMessage } from '@/lib/mockData'
+import { availableParties, userInterests, currentUser, friends, globalPublicChat, PublicChatMessage, Party } from '@/lib/mockData'
 import { useParty } from '@/lib/PartyContext'
 import { cn } from '@/lib/utils'
-import { Users, Calendar, User, CheckCircle, XCircle, Search, Send, MessageCircle } from 'lucide-react'
+import { Users, Calendar, User, CheckCircle, XCircle, Search, Send, MessageCircle, Plus } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
+import CreatePartyDialog from '@/components/dashboard/CreatePartyDialog'
 
 const Card = ({ children, className }: { children: React.ReactNode, className?: string }) => (
   <div className={cn("bg-white rounded-xl shadow-sm border border-gray-200", className)}>
@@ -34,14 +35,20 @@ export default function DiscoverPage() {
   const [selectedParty, setSelectedParty] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<PublicChatMessage[]>(globalPublicChat)
   const [messageInput, setMessageInput] = useState('')
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [customParties, setCustomParties] = useState<Party[]>([])
   const chatEndRef = useRef<HTMLDivElement>(null)
 
-  // Filter parties by user interests and search term
-  const filteredParties = availableParties.filter(party => {
+  // Combine mock parties with user-created parties
+  const allParties = [...availableParties, ...customParties]
+
+  // Filter parties by user interests, search term, and maximum 6 members limit
+  const filteredParties = allParties.filter(party => {
     const matchesInterest = userInterests.includes(party.category)
     const matchesSearch = party.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          party.description.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesInterest && matchesSearch
+    const matchesMaxMembers = (party.maxMembers ?? Infinity) <= 6
+    return matchesInterest && matchesSearch && matchesMaxMembers
   })
 
   const selectedPartyData = selectedParty 
@@ -111,16 +118,38 @@ export default function DiscoverPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
 
+  const handleCreateParty = (partyData: Omit<Party, 'id' | 'memberCount' | 'createdAt'>) => {
+    const newParty: Party = {
+      ...partyData,
+      id: `party-custom-${Date.now()}`,
+      memberCount: 1, // Creator is the first member
+      createdAt: new Date().toISOString().split('T')[0]
+    }
+    setCustomParties(prev => [...prev, newParty])
+    // Auto-select and auto-join the newly created party
+    setSelectedParty(newParty.id)
+    setJoinedParty(newParty)
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[calc(100vh-4rem)]">
       {/* Left Column: Party List */}
       <Card className="flex flex-col overflow-hidden h-full">
         <CardHeader>
-          <div>
-            <CardTitle>Discover Parties</CardTitle>
-            <CardDescription>
-              Find communities that match your interests: {userInterests.join(', ')}
-            </CardDescription>
+          <div className="flex items-start justify-between mb-4 gap-4">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-2xl">Discover Parties</CardTitle>
+              <CardDescription className="mt-2">
+                Find communities that match your interests: {userInterests.join(', ')}
+              </CardDescription>
+            </div>
+            <button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap flex-shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Party</span>
+            </button>
           </div>
           <div className="mt-4 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -378,6 +407,13 @@ export default function DiscoverPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Create Party Dialog */}
+      <CreatePartyDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onCreateParty={handleCreateParty}
+      />
     </div>
   )
 }

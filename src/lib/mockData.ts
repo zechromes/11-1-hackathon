@@ -386,6 +386,39 @@ export const availableParties: Party[] = [
     createdAt: '2024-08-20',
     organizer: currentUser,
     thumbnail: '/api/placeholder/400/200'
+  },
+  {
+    id: 'party-8',
+    name: 'Knee Recovery Small Group',
+    description: 'A small, intimate group for knee recovery support. Limited to 6 members for focused attention.',
+    category: 'Knee',
+    memberCount: 3,
+    maxMembers: 6,
+    createdAt: '2024-10-25',
+    organizer: friends[0],
+    thumbnail: '/api/placeholder/400/200'
+  },
+  {
+    id: 'party-9',
+    name: 'Shoulder Support Circle',
+    description: 'Small group dedicated to shoulder rehabilitation. Maximum 6 members for personalized support.',
+    category: 'Shoulder',
+    memberCount: 4,
+    maxMembers: 6,
+    createdAt: '2024-10-28',
+    organizer: friends[1],
+    thumbnail: '/api/placeholder/400/200'
+  },
+  {
+    id: 'party-10',
+    name: 'Spine Health Small Group',
+    description: 'Intimate community for spine rehabilitation. Limited to 6 members to ensure quality support.',
+    category: 'Spine',
+    memberCount: 2,
+    maxMembers: 6,
+    createdAt: '2024-11-01',
+    organizer: friends[2],
+    thumbnail: '/api/placeholder/400/200'
   }
 ]
 
@@ -580,6 +613,11 @@ export const navigationItems: NavigationItem[] = [
         icon: 'MessageSquare'
       }
     ]
+  },
+  {
+    name: 'Group Session',
+    href: '/dashboard/session',
+    icon: 'Video'
   },
   {
     name: 'Knowledge',

@@ -12,6 +12,14 @@ export interface User {
   role?: 'patient' | 'admin' // 添加角色字段
 }
 
+export interface PendingFriendRequest {
+  id: string
+  senderId: string // User who sent the request
+  receiverId: string // User who received the request
+  requestedAt: string
+  status: 'pending' | 'accepted' | 'rejected'
+}
+
 export interface PatientRiskData {
   patientId: string
   patientName: string
@@ -296,6 +304,82 @@ export const todaysTasks: Task[] = [
     description: 'Record today\'s pain level and feelings',
     completed: false,
     type: 'check'
+  }
+]
+
+// Available users to add as friends (not yet in friends list)
+export const availableUsers: User[] = [
+  {
+    id: '7',
+    name: 'James Anderson',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Knee Rehabilitation',
+    joinDate: '2024-09-20',
+    isOnline: true,
+    lastCheckIn: '2024-11-01T09:30:00Z'
+  },
+  {
+    id: '8',
+    name: 'Sophia Martinez',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Shoulder Rehabilitation',
+    joinDate: '2024-10-05',
+    isOnline: false,
+    lastCheckIn: '2024-10-31T18:00:00Z'
+  },
+  {
+    id: '9',
+    name: 'Robert Taylor',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Spine Rehabilitation',
+    joinDate: '2024-08-15',
+    isOnline: true,
+    lastCheckIn: '2024-11-01T08:00:00Z'
+  },
+  {
+    id: '10',
+    name: 'Olivia White',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Knee Rehabilitation',
+    joinDate: '2024-10-10',
+    isOnline: true,
+    lastCheckIn: '2024-11-01T10:15:00Z'
+  },
+  {
+    id: '11',
+    name: 'Michael Chen',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Ankle Rehabilitation',
+    joinDate: '2024-09-25',
+    isOnline: false,
+    lastCheckIn: '2024-10-31T20:00:00Z'
+  },
+  {
+    id: '12',
+    name: 'Emily Rodriguez',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Hip Rehabilitation',
+    joinDate: '2024-10-01',
+    isOnline: true,
+    lastCheckIn: '2024-11-01T09:45:00Z'
+  },
+  {
+    id: '13',
+    name: 'William Kim',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Wrist Rehabilitation',
+    joinDate: '2024-09-30',
+    isOnline: true,
+    lastCheckIn: '2024-11-01T11:00:00Z'
+  },
+  {
+    id: '14',
+    name: 'Grace Thompson',
+    avatar: '/api/placeholder/40/40',
+    injuryType: 'Shoulder Rehabilitation',
+    joinDate: '2024-08-25',
+    isOnline: false,
+    lastCheckIn: '2024-10-31T17:30:00Z'
   }
 ]
 
@@ -703,6 +787,81 @@ export const userTrainingPlan: string[] = [
   'Knee Extension Strengthening',
   'Quadriceps Strengthening',
   'Hamstring Flexibility'
+]
+
+// Exercise Plan Schedule - exercises scheduled in the plan
+export interface ExercisePlanItem {
+  id: string
+  title: string
+  description: string
+  scheduledDate: string // Date string like "2024-11-01"
+  scheduledTime: string // Time string like "09:00"
+  duration: number // in minutes
+  type: 'exercise' | 'therapy' | 'checkup'
+  location?: string
+  therapist?: string
+  frequency?: 'daily' | 'weekly' | 'custom' // How often to repeat
+  repeatForWeeks?: number // Number of weeks to repeat
+}
+
+export const exercisePlanItems: ExercisePlanItem[] = [
+  {
+    id: 'plan-1',
+    title: 'Morning Knee Stretching',
+    description: 'Perform 15-minute knee joint stretching exercises',
+    scheduledDate: '2024-11-02',
+    scheduledTime: '07:00',
+    duration: 15,
+    type: 'exercise',
+    frequency: 'daily',
+    repeatForWeeks: 4
+  },
+  {
+    id: 'plan-2',
+    title: 'Quadriceps Strengthening',
+    description: 'Strength training for quadriceps muscles - 3 sets of 10 reps',
+    scheduledDate: '2024-11-02',
+    scheduledTime: '10:00',
+    duration: 30,
+    type: 'exercise',
+    frequency: 'daily',
+    repeatForWeeks: 4
+  },
+  {
+    id: 'plan-3',
+    title: 'Balance Training Session',
+    description: 'Balance and coordination exercises with therapist',
+    scheduledDate: '2024-11-03',
+    scheduledTime: '14:00',
+    duration: 45,
+    type: 'therapy',
+    location: 'Rehabilitation Center A',
+    therapist: 'Dr. Wang',
+    frequency: 'weekly',
+    repeatForWeeks: 4
+  },
+  {
+    id: 'plan-4',
+    title: 'Progress Check-up',
+    description: 'Monthly progress evaluation with Dr. Wang',
+    scheduledDate: '2024-11-05',
+    scheduledTime: '11:00',
+    duration: 30,
+    type: 'checkup',
+    location: 'Orthopedic Clinic',
+    therapist: 'Dr. Wang'
+  },
+  {
+    id: 'plan-5',
+    title: 'Evening Flexibility Routine',
+    description: 'Light stretching and flexibility exercises before bed',
+    scheduledDate: '2024-11-02',
+    scheduledTime: '20:00',
+    duration: 20,
+    type: 'exercise',
+    frequency: 'daily',
+    repeatForWeeks: 4
+  }
 ]
 
 // Group exercises available

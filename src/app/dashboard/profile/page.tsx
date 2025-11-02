@@ -1,12 +1,18 @@
 'use client'
 
-import { currentUser } from '@/lib/mockData'
-import { Calendar, Download, Dumbbell, Edit, FileText, User } from 'lucide-react'
+import { currentUser, exercisePlanItems } from '@/lib/mockData'
+import { useCalendar, CalendarEvent } from '@/lib/CalendarContext'
+import { cn } from '@/lib/utils'
+import { Calendar, Download, Dumbbell, Edit, FileText, User, RefreshCw, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncSuccess, setSyncSuccess] = useState(false)
+  const { addEvents, clearSyncedEvents } = useCalendar()
 
   // Mock data for the profile
   const nextAppointment = {
@@ -29,6 +35,133 @@ export default function ProfilePage() {
 
   const handleEditProfile = () => {
     setIsEditing(!isEditing)
+  }
+
+  const handleSynchronizePlan = () => {
+    setIsSyncing(true)
+    setSyncSuccess(false)
+
+    // Simulate API call delay
+    setTimeout(() => {
+      // Clear previously synced events
+      clearSyncedEvents()
+
+      // Convert exercise plan items to calendar events
+      const newEvents: CalendarEvent[] = []
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      exercisePlanItems.forEach((item) => {
+        const startDate = new Date(item.scheduledDate)
+        startDate.setHours(0, 0, 0, 0)
+
+        // Generate events based on frequency
+        if (item.frequency === 'daily' && item.repeatForWeeks) {
+          // Generate daily events for specified weeks
+          for (let week = 0; week < item.repeatForWeeks; week++) {
+            for (let day = 0; day < 7; day++) {
+              const eventDate = new Date(startDate)
+              eventDate.setDate(eventDate.getDate() + (week * 7) + day)
+              
+              // Only add events that are today or in the future
+              if (eventDate >= today) {
+                const [hours, minutes] = item.scheduledTime.split(':').map(Number)
+                const eventDateTime = new Date(eventDate)
+                eventDateTime.setHours(hours, minutes, 0, 0)
+
+                newEvents.push({
+                  id: `plan-${item.id}-${week}-${day}`,
+                  title: item.title,
+                  date: eventDateTime,
+                  duration: item.duration,
+                  type: item.type as 'exercise' | 'therapy' | 'checkup',
+                  location: item.location,
+                  therapist: item.therapist,
+                  description: item.description,
+                  source: 'exercise-plan'
+                })
+              }
+            }
+          }
+        } else if (item.frequency === 'weekly' && item.repeatForWeeks) {
+          // Generate weekly events for specified weeks
+          for (let week = 0; week < item.repeatForWeeks; week++) {
+            const eventDate = new Date(startDate)
+            eventDate.setDate(eventDate.getDate() + (week * 7))
+            
+            // Only add events that are today or in the future
+            if (eventDate >= today) {
+              const [hours, minutes] = item.scheduledTime.split(':').map(Number)
+              const eventDateTime = new Date(eventDate)
+              eventDateTime.setHours(hours, minutes, 0, 0)
+
+              newEvents.push({
+                id: `plan-${item.id}-${week}`,
+                title: item.title,
+                date: eventDateTime,
+                duration: item.duration,
+                type: item.type as 'exercise' | 'therapy' | 'checkup',
+                location: item.location,
+                therapist: item.therapist,
+                description: item.description,
+                source: 'exercise-plan'
+              })
+            }
+          }
+        } else {
+          // Single event (no frequency)
+          const eventDate = new Date(item.scheduledDate)
+          
+          // Only add if today or in the future
+          if (eventDate >= today) {
+            const [hours, minutes] = item.scheduledTime.split(':').map(Number)
+            const eventDateTime = new Date(eventDate)
+            eventDateTime.setHours(hours, minutes, 0, 0)
+
+            newEvents.push({
+              id: `plan-${item.id}`,
+              title: item.title,
+              date: eventDateTime,
+              duration: item.duration,
+              type: item.type as 'exercise' | 'therapy' | 'checkup',
+              location: item.location,
+              therapist: item.therapist,
+              description: item.description,
+              source: 'exercise-plan'
+            })
+          }
+        }
+      })
+
+      // Add events to calendar
+      if (newEvents.length > 0) {
+        addEvents(newEvents)
+        setSyncSuccess(true)
+        setTimeout(() => setSyncSuccess(false), 3000)
+        
+        // Show success toast
+        toast.success(
+          `Successfully synchronized ${newEvents.length} events to your calendar!`,
+          {
+            duration: 4000,
+            icon: '✅',
+            style: {
+              borderRadius: '0.5rem',
+              background: '#10b981',
+              color: '#fff',
+            },
+          }
+        )
+      } else {
+        // Show info toast if no events to sync
+        toast('No future events to synchronize', {
+          duration: 3000,
+          icon: 'ℹ️',
+        })
+      }
+
+      setIsSyncing(false)
+    }, 1000)
   }
 
   return (
@@ -112,13 +245,46 @@ export default function ProfilePage() {
 
           {/* Exercise Plan Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 md:col-span-2">
-            <div className="flex items-center mb-4">
-              <Dumbbell className="w-5 h-5 text-[#8573bd] mr-2" />
-              <h2 className="text-lg font-semibold text-[#0F1620]">My Exercise Plan</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Dumbbell className="w-5 h-5 text-[#8573bd] mr-2" />
+                <h2 className="text-lg font-semibold text-[#0F1620]">My Exercise Plan</h2>
+              </div>
+              
+              {/* Synchronize Button at Top */}
+              <button
+                onClick={handleSynchronizePlan}
+                disabled={isSyncing}
+                className={cn(
+                  "px-4 py-2 rounded-lg transition-colors flex items-center",
+                  syncSuccess
+                    ? "bg-green-500 text-white"
+                    : isSyncing
+                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    : "bg-[#8573bd] text-white hover:bg-[#E8B98A]"
+                )}
+              >
+                {syncSuccess ? (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Synced!
+                  </>
+                ) : isSyncing ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Synchronize Plan
+                  </>
+                )}
+              </button>
             </div>
 
             <p className="text-[#5B626D] text-sm mb-6">
-              This is your personalized rehabilitation exercise plan created by Dr. Wang. Please download and follow consistently.
+              This is your personalized rehabilitation exercise plan created by Dr. Wang. Synchronize your plan to calendar to automatically add all scheduled exercises and appointments.
             </p>
 
             {/* PDF Preview Module */}

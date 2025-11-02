@@ -1,9 +1,10 @@
 'use client'
 
-import { chatMessages, currentUser, friends } from '@/lib/mockData'
+import { chatMessages, currentUser, friends as initialFriends, availableUsers, PendingFriendRequest } from '@/lib/mockData'
 import { cn } from '@/lib/utils'
-import { MessageCircle, MoreVertical, Search, Send, User, UserPlus } from 'lucide-react'
+import { MessageCircle, MoreVertical, Search, Send, User, UserPlus, Check, X, Clock } from 'lucide-react'
 import { useState } from 'react'
+import AddFriendModal from '@/components/dashboard/AddFriendModal'
 
 // Replicating the UI components from community.tsx using existing styles
 
@@ -43,15 +44,43 @@ const AvatarFallback = ({ children }: { children: React.ReactNode }) => (
 
 
 export default function FriendsPage() {
-  const [selectedFriend, setSelectedFriend] = useState<string | null>(friends[0]?.id || null)
+  const [friendsList, setFriendsList] = useState(initialFriends)
+  // Initialize with some mock received requests for demonstration
+  const [pendingRequests, setPendingRequests] = useState<PendingFriendRequest[]>([
+    {
+      id: 'received-1',
+      senderId: '7', // James Anderson
+      receiverId: currentUser.id,
+      requestedAt: '2024-11-01T08:00:00Z',
+      status: 'pending'
+    },
+    {
+      id: 'received-2',
+      senderId: '10', // Olivia White
+      receiverId: currentUser.id,
+      requestedAt: '2024-11-01T09:15:00Z',
+      status: 'pending'
+    }
+  ])
+  const [selectedFriend, setSelectedFriend] = useState<string | null>(friendsList[0]?.id || null)
   const [messageInput, setMessageInput] = useState('')
   const [messages, setMessages] = useState<Record<string, typeof chatMessages[string]>>(chatMessages)
   const [searchTerm, setSearchTerm] = useState('')
+  const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'friends' | 'received' | 'sent'>('friends')
 
-  const selectedFriendData = friends.find(f => f.id === selectedFriend)
+  const selectedFriendData = friendsList.find(f => f.id === selectedFriend)
+  
+  // Separate sent and received requests
+  const receivedRequests = pendingRequests.filter(r => 
+    r.receiverId === currentUser.id && r.status === 'pending'
+  )
+  const sentRequests = pendingRequests.filter(r => 
+    r.senderId === currentUser.id && r.status === 'pending'
+  )
 
   // Filter friends based on search term
-  const filteredFriends = friends.filter(friend => {
+  const filteredFriends = friendsList.filter(friend => {
     if (!searchTerm.trim()) return true
     const searchLower = searchTerm.toLowerCase()
     return (
@@ -59,6 +88,87 @@ export default function FriendsPage() {
       friend.injuryType.toLowerCase().includes(searchLower)
     )
   })
+
+  // Handle adding a new friend (sends request to the other user)
+  const handleAddFriend = (userId: string) => {
+    const userToAdd = availableUsers.find(u => u.id === userId)
+    // Check if already friends or request already exists
+    const alreadyFriends = friendsList.find(f => f.id === userId)
+    const existingRequest = pendingRequests.find(p => 
+      (p.senderId === currentUser.id && p.receiverId === userId && p.status === 'pending') ||
+      (p.senderId === userId && p.receiverId === currentUser.id && p.status === 'pending')
+    )
+    
+    if (userToAdd && !alreadyFriends && !existingRequest) {
+      const newRequest: PendingFriendRequest = {
+        id: `request-${Date.now()}`,
+        senderId: currentUser.id,
+        receiverId: userId,
+        requestedAt: new Date().toISOString(),
+        status: 'pending'
+      }
+      setPendingRequests([...pendingRequests, newRequest])
+      // Close modal after sending request
+      setIsAddFriendModalOpen(false)
+    }
+  }
+
+  // Handle accepting a received friend request
+  const handleAcceptRequest = (requestId: string) => {
+    const request = pendingRequests.find(r => r.id === requestId)
+    if (request && request.receiverId === currentUser.id) {
+      // Get the sender (the person who sent the request)
+      const sender = availableUsers.find(u => u.id === request.senderId) || 
+                    friendsList.find(f => f.id === request.senderId)
+      
+      if (sender && !friendsList.find(f => f.id === request.senderId)) {
+        // Add to friends list
+        const userToAdd = availableUsers.find(u => u.id === request.senderId)
+        if (userToAdd) {
+          setFriendsList([...friendsList, userToAdd])
+        }
+        // Update request status
+        setPendingRequests(pendingRequests.map(r => 
+          r.id === requestId ? { ...r, status: 'accepted' } : r
+        ))
+        // Switch to friends tab and select the new friend
+        if (activeTab === 'received') {
+          setActiveTab('friends')
+          setSelectedFriend(request.senderId)
+        }
+      }
+    }
+  }
+
+  // Handle rejecting a received friend request
+  const handleRejectRequest = (requestId: string) => {
+    const request = pendingRequests.find(r => r.id === requestId)
+    if (request && request.receiverId === currentUser.id) {
+      // Update status to rejected
+      setPendingRequests(pendingRequests.map(r => 
+        r.id === requestId ? { ...r, status: 'rejected' } : r
+      ))
+    }
+  }
+
+  // Handle canceling a sent request
+  const handleCancelSentRequest = (requestId: string) => {
+    const request = pendingRequests.find(r => r.id === requestId)
+    if (request && request.senderId === currentUser.id) {
+      // Remove the sent request
+      setPendingRequests(pendingRequests.filter(r => r.id !== requestId))
+    }
+  }
+
+  // Get existing friend IDs and pending request IDs for the modal
+  const existingFriendIds = friendsList.map(f => f.id)
+  const pendingReceiverIds = pendingRequests
+    .filter(r => r.senderId === currentUser.id && r.status === 'pending')
+    .map(r => r.receiverId)
+  const pendingSenderIds = pendingRequests
+    .filter(r => r.receiverId === currentUser.id && r.status === 'pending')
+    .map(r => r.senderId)
+  const excludedUserIds = [...existingFriendIds, ...pendingReceiverIds, ...pendingSenderIds]
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedFriend) return
@@ -106,33 +216,98 @@ export default function FriendsPage() {
               <CardTitle>Friends</CardTitle>
               <CardDescription>Connect with your recovery companions</CardDescription>
             </div>
-            <button className="flex items-center justify-center px-4 py-2 bg-[#EAE6F5] text-[#8573bd] rounded-lg hover:bg-[#8573bd] hover:text-white transition-colors">
+            <button
+              onClick={() => setIsAddFriendModalOpen(true)}
+              className="flex items-center justify-center px-4 py-2 bg-[#EAE6F5] text-[#8573bd] rounded-lg hover:bg-[#8573bd] hover:text-white transition-colors"
+            >
               <UserPlus className="mr-2 h-4 w-4" />
               Add Friends
             </button>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search friends by name or injury type..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            />
+          {/* Tabs for Friends, Received Requests, and Sent Requests */}
+          <div className="flex border-b border-gray-200 -mx-6 px-6 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('friends')}
+              className={cn(
+                "px-4 py-2 text-sm font-medium border-b-2 transition-colors relative whitespace-nowrap",
+                activeTab === 'friends'
+                  ? "border-[#8573bd] text-[#8573bd]"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              )}
+            >
+              Friends
+              {friendsList.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 bg-[#EAE6F5] text-[#8573bd] rounded-full text-xs">
+                  {friendsList.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('received')}
+              className={cn(
+                "px-4 py-2 text-sm font-medium border-b-2 transition-colors relative flex items-center whitespace-nowrap",
+                activeTab === 'received'
+                  ? "border-[#8573bd] text-[#8573bd]"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Received
+              {receivedRequests.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 bg-[#EAE6F5] text-[#8573bd] rounded-full text-xs">
+                  {receivedRequests.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('sent')}
+              className={cn(
+                "px-4 py-2 text-sm font-medium border-b-2 transition-colors relative flex items-center whitespace-nowrap",
+                activeTab === 'sent'
+                  ? "border-[#8573bd] text-[#8573bd]"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <Clock className="w-4 h-4 mr-2" />
+              Sent
+              {sentRequests.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 bg-[#EAE6F5] text-[#8573bd] rounded-full text-xs">
+                  {sentRequests.length}
+                </span>
+              )}
+            </button>
           </div>
+          {activeTab === 'friends' && (
+            <div className="relative mt-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search friends by name or injury type..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              />
+            </div>
+          )}
         </CardHeader>
         <CardContent className="flex-1 overflow-y-auto">
-          {filteredFriends.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <div className="text-center">
-                <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No friends found matching "{searchTerm}"</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {filteredFriends.map((friend) => {
+          {activeTab === 'friends' ? (
+            <>
+              {filteredFriends.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <div className="text-center">
+                    <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">
+                      {searchTerm.trim() 
+                        ? `No friends found matching &quot;${searchTerm}&quot;`
+                        : 'No friends yet. Add some friends to get started!'
+                      }
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredFriends.map((friend) => {
                 const friendMessages = messages[friend.id] || []
                 const lastMessage = friendMessages[friendMessages.length - 1]
                 const isSelected = selectedFriend === friend.id
@@ -177,7 +352,123 @@ export default function FriendsPage() {
                   </button>
                 )
               })}
-            </div>
+                </div>
+              )}
+            </>
+          ) : activeTab === 'received' ? (
+            <>
+              {receivedRequests.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <div className="text-center">
+                    <UserPlus className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No received friend requests</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {receivedRequests.map((request) => {
+                      const senderUser = availableUsers.find(u => u.id === request.senderId) || 
+                                        friendsList.find(f => f.id === request.senderId)
+                      if (!senderUser) return null
+                      
+                      return (
+                        <div
+                          key={request.id}
+                          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#8573bd] hover:bg-[#EAE6F5]/30 transition-all"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div className="relative">
+                              <div className="w-12 h-12 bg-gradient-to-br from-[#8573bd] to-[#E8B98A] rounded-full flex items-center justify-center">
+                                <User className="w-6 h-6 text-white" />
+                              </div>
+                              {senderUser.isOnline && (
+                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{senderUser.name}</h3>
+                              <p className="text-sm text-gray-500">{senderUser.injuryType}</p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Sent {formatTime(request.requestedAt)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleAcceptRequest(request.id)}
+                              className="flex items-center px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                              title="Accept friend request"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              <span className="text-xs">Accept</span>
+                            </button>
+                            <button
+                              onClick={() => handleRejectRequest(request.id)}
+                              className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                              title="Reject friend request"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              <span className="text-xs">Reject</span>
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {sentRequests.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <div className="text-center">
+                    <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No sent friend requests</p>
+                    <p className="text-xs text-gray-400 mt-1">Waiting for responses...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sentRequests.map((request) => {
+                      const receiverUser = availableUsers.find(u => u.id === request.receiverId)
+                      if (!receiverUser) return null
+                      
+                      return (
+                        <div
+                          key={request.id}
+                          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50/50"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div className="relative">
+                              <div className="w-12 h-12 bg-gradient-to-br from-[#8573bd] to-[#E8B98A] rounded-full flex items-center justify-center">
+                                <User className="w-6 h-6 text-white" />
+                              </div>
+                              {receiverUser.isOnline && (
+                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{receiverUser.name}</h3>
+                              <p className="text-sm text-gray-500">{receiverUser.injuryType}</p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Sent {formatTime(request.requestedAt)} · Waiting for response
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleCancelSentRequest(request.id)}
+                            className="flex items-center px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                            title="Cancel request"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            <span className="text-xs">Cancel</span>
+                          </button>
+                        </div>
+                      )
+                    })}
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
@@ -283,6 +574,14 @@ export default function FriendsPage() {
           </div>
         )}
       </Card>
+
+      {/* Add Friend Modal */}
+      <AddFriendModal
+        isOpen={isAddFriendModalOpen}
+        onClose={() => setIsAddFriendModalOpen(false)}
+        onAddFriend={handleAddFriend}
+        existingFriendIds={excludedUserIds}
+      />
     </div>
   );
 }

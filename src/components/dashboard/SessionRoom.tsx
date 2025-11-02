@@ -21,6 +21,7 @@ interface SessionRoomProps {
   sessionTitle?: string
   onLeave?: () => void
   isHost?: boolean
+  participantCount?: number // Number of actual participants in the room
 }
 
 interface Message {
@@ -30,10 +31,89 @@ interface Message {
   timestamp: Date
 }
 
+// Pixelated cartoon avatar component with floating animation using GIF files
+function PixelatedAvatar({ 
+  isCurrentUser, 
+  color, 
+  delay,
+  avatarIndex
+}: { 
+  isCurrentUser: boolean
+  color: string
+  delay: number
+  avatarIndex: number
+}) {
+  // Map avatar index to GIF files
+  const avatarGifs = [
+    '/blue_run.gif',
+    '/pink_run.gif',
+    '/pink_punch.gif',
+    '/white_run.gif',
+    '/blue_dance.gif',
+    '/white_jump.gif'
+  ]
+  
+  const gifSrc = avatarGifs[avatarIndex % avatarGifs.length]
+  
+  return (
+    <>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          25% { transform: translateY(-10px) rotate(2deg); }
+          50% { transform: translateY(-5px) rotate(0deg); }
+          75% { transform: translateY(-8px) rotate(-2deg); }
+        }
+        .pixel-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        .pixel-avatar-gif {
+          image-rendering: pixelated;
+          image-rendering: -moz-crisp-edges;
+          image-rendering: crisp-edges;
+        }
+      `}</style>
+      <div 
+        className="relative pixel-float"
+        style={{
+          animationDelay: `${delay}s`
+        }}
+      >
+        {/* GIF Avatar */}
+        <div 
+          className="relative pixel-avatar-gif"
+          style={{
+            width: '96px',
+            height: '96px',
+            animationDelay: `${delay}s`
+          }}
+        >
+          <img
+            src={gifSrc}
+            alt="Pixelated avatar"
+            className="w-full h-full object-contain"
+            style={{
+              imageRendering: 'pixelated'
+            }}
+          />
+        </div>
+        
+        {/* User indicator */}
+        {isCurrentUser && (
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-gray-900 flex items-center justify-center shadow-lg z-10">
+            <div className="w-2 h-2 bg-white rounded-full" />
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
 export default function SessionRoom({ 
-  sessionTitle = 'Group Support Session',
+  sessionTitle = 'Group Exercise',
   onLeave,
-  isHost = false
+  isHost = false,
+  participantCount = 6 // Default to 6, but can be overridden
 }: SessionRoomProps) {
   const [micEnabled, setMicEnabled] = useState(false)
   const [videoEnabled, setVideoEnabled] = useState(false)
@@ -48,10 +128,23 @@ export default function SessionRoom({
     }
   ])
   
-  // Mock active participants
+  // Participants based on actual participant count in the room
+  // Always includes currentUser, plus up to (participantCount - 1) other participants
+  const actualParticipantCount = Math.min(Math.max(participantCount, 1), 6) // Clamp between 1 and 6
+  const otherParticipantCount = Math.max(actualParticipantCount - 1, 0) // Exclude current user
+  
   const participants = [
     currentUser,
-    ...friends.slice(0, 6)
+    ...friends.slice(0, otherParticipantCount)
+  ]
+  
+  const avatarColors = [
+    '#3B82F6', // blue
+    '#10B981', // green
+    '#F59E0B', // orange
+    '#EF4444', // red
+    '#8B5CF6', // purple
+    '#EC4899'  // pink
   ]
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -102,56 +195,84 @@ export default function SessionRoom({
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Video Grid */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Main Session Area - Central video with floating users */}
         <div className={cn(
-          "flex-1 p-4 overflow-y-auto transition-all duration-300",
+          "flex-1 relative transition-all duration-300",
           showChat ? "w-2/3" : "w-full"
         )}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
-            {participants.map((participant, index) => (
-              <div
-                key={participant.id}
-                className={cn(
-                  "relative rounded-lg overflow-hidden bg-gray-800 border-2 aspect-video",
-                  participant.id === currentUser.id
-                    ? "border-blue-500"
-                    : "border-gray-700"
-                )}
-              >
-                {/* Video Placeholder */}
-                <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex flex-col items-center justify-center">
-                  <div className={cn(
-                    "w-20 h-20 rounded-full flex items-center justify-center mb-3",
-                    participant.id === currentUser.id
-                      ? "bg-gradient-to-br from-blue-500 to-blue-600"
-                      : "bg-gradient-to-br from-green-400 to-blue-500"
-                  )}>
-                    <span className="text-white font-semibold text-2xl">
-                      {participant.name.charAt(0)}
-                    </span>
-                  </div>
-                  <p className="text-white font-medium">{participant.name}</p>
-                  <p className="text-gray-400 text-sm mt-1">{participant.injuryType}</p>
-                </div>
-
-                {/* User Badge */}
-                {participant.id === currentUser.id && (
-                  <div className="absolute top-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs rounded">
-                    You
-                  </div>
-                )}
-
-                {/* Audio Status */}
-                <div className="absolute bottom-2 left-2">
-                  {micEnabled && participant.id === currentUser.id ? (
-                    <Mic className="w-4 h-4 text-green-400" />
-                  ) : (
-                    <MicOff className="w-4 h-4 text-red-400" />
-                  )}
+          {/* Central Exercise Video */}
+          <div className="absolute inset-0 flex items-center justify-center p-8">
+            <div className="relative w-full max-w-4xl aspect-video bg-gray-800 rounded-xl overflow-hidden border-4 border-gray-700 shadow-2xl">
+              {/* Video Placeholder */}
+              <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center">
+                <Video className="w-24 h-24 text-gray-600 mb-4" />
+                <p className="text-white text-xl font-semibold mb-2">Exercise Instruction Video</p>
+                <p className="text-gray-400 text-sm">Follow along with the guided exercise</p>
+              </div>
+              
+              {/* Play overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 bg-blue-600 bg-opacity-80 rounded-full flex items-center justify-center cursor-pointer hover:bg-opacity-100 transition-opacity">
+                  <div className="w-0 h-0 border-l-[16px] border-l-white border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent ml-1" />
                 </div>
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Floating Users Around Video */}
+          <div className="absolute inset-0 pointer-events-none">
+            {participants.map((participant, index) => {
+              const isCurrent = participant.id === currentUser.id
+              
+              // Current user always at bottom-left, others fill remaining positions
+              let position
+              if (isCurrent) {
+                position = { bottom: '10%', left: '2%' } // Bottom-left
+              } else {
+                // Find the index excluding current user
+                const otherParticipants = participants.filter(p => p.id !== currentUser.id)
+                const otherIndex = otherParticipants.findIndex(p => p.id === participant.id)
+                
+                // Positions: top-left, mid-left, top-right, mid-right, bottom-right
+                // (bottom-left is reserved for current user)
+                const positions = [
+                  { top: '10%', left: '2%' },        // Top-left
+                  { top: '50%', left: '2%', transform: 'translateY(-50%)' },  // Mid-left
+                  { top: '10%', right: '2%' },       // Top-right
+                  { top: '50%', right: '2%', transform: 'translateY(-50%)' }, // Mid-right
+                  { bottom: '10%', right: '2%' }     // Bottom-right
+                ]
+                position = positions[otherIndex] || { top: '50%', left: '50%' }
+              }
+              
+              return (
+                <div
+                  key={participant.id}
+                  className="absolute flex flex-col items-center"
+                  style={position}
+                >
+                  {/* Pixelated Avatar */}
+                  <div className="relative mb-2">
+                    <PixelatedAvatar 
+                      isCurrentUser={isCurrent}
+                      color={avatarColors[index]}
+                      delay={index * 0.5}
+                      avatarIndex={index}
+                    />
+                    
+                    {/* Audio Status */}
+                    <div className="absolute -bottom-1 -right-1">
+                      {micEnabled && isCurrent ? (
+                        <Mic className="w-4 h-4 text-green-400 bg-gray-900 rounded-full p-1" />
+                      ) : (
+                        <MicOff className="w-4 h-4 text-red-400 bg-gray-900 rounded-full p-1" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 

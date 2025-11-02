@@ -85,7 +85,7 @@ export default function KnowledgePage() {
             className={cn(
               "px-4 py-2 rounded-full text-sm font-medium transition-colors",
               selectedCategory === category.id
-                ? "bg-blue-600 text-white"
+                ? "bg-[#8573bd] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             )}
           >
@@ -98,8 +98,8 @@ export default function KnowledgePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-[#EAE6F5] rounded-lg flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-[#8573bd]" />
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Total Articles</p>
@@ -124,8 +124,8 @@ export default function KnowledgePage() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <Clock className="w-6 h-6 text-[#E8B98A]" />
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Avg. Reading Time</p>
@@ -155,13 +155,13 @@ export default function KnowledgePage() {
                 >
                   {/* 文章缩略图 */}
                   <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                    <BookOpen className="w-12 h-12 text-blue-500" />
+                    <BookOpen className="w-12 h-12 text-[#8573bd]" />
                   </div>
 
                   <div className="p-4">
                     {/* 分类标签 */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                      <span className="px-2 py-1 bg-[#EAE6F5] text-[#8573bd] text-xs rounded-full">
                         {article.category}
                       </span>
                       <div className="flex items-center text-xs text-gray-500">

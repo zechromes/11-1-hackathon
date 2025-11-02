@@ -10,22 +10,42 @@ interface WaitingRoomProps {
   onLeave?: () => void
   sessionTitle?: string
   startTime?: string
+  participantCount?: number // Number of actual participants in the room
 }
 
 export default function WaitingRoom({ 
   onJoinSession, 
   onLeave,
-  sessionTitle = 'Group Support Session',
-  startTime
+  sessionTitle = 'Group Exercise',
+  startTime,
+  participantCount = 6 // Default to 6, but can be overridden
 }: WaitingRoomProps) {
   const [micEnabled, setMicEnabled] = useState(false)
   const [videoEnabled, setVideoEnabled] = useState(false)
   
-  // Mock waiting participants - mix of friends
+  // Participants based on actual participant count in the room
+  // Always includes currentUser, plus up to (participantCount - 1) other participants
+  const actualParticipantCount = Math.min(Math.max(participantCount, 1), 6) // Clamp between 1 and 6
+  const otherParticipantCount = Math.max(actualParticipantCount - 1, 0) // Exclude current user
+  
   const participants = [
     currentUser,
-    ...friends.slice(0, 5)
+    ...friends.slice(0, otherParticipantCount)
   ]
+
+  // Map avatar index to idle GIF files (matching SessionRoom avatar mapping)
+  // Index mapping: 0->blue, 1->pink, 2->pink, 3->white, 4->blue, 5->white
+  const getIdleGif = (index: number) => {
+    const idleGifs = [
+      '/blue_idle.gif',   // Index 0 -> blue
+      '/pink_idle.gif',   // Index 1 -> pink
+      '/pink_idle.gif',   // Index 2 -> pink
+      '/white_idle.gif',  // Index 3 -> white
+      '/blue_idle.gif',   // Index 4 -> blue
+      '/white_idle.gif'   // Index 5 -> white
+    ]
+    return idleGifs[index % idleGifs.length]
+  }
 
   const handleJoinSession = () => {
     onJoinSession?.()
@@ -90,15 +110,16 @@ export default function WaitingRoom({
               )}
             >
               <div className="flex flex-col items-center">
-                <div className={cn(
-                  "w-16 h-16 rounded-full flex items-center justify-center mb-2",
-                  participant.id === currentUser.id
-                    ? "bg-gradient-to-br from-blue-500 to-blue-600"
-                    : "bg-gradient-to-br from-green-400 to-blue-500"
-                )}>
-                  <span className="text-white font-semibold text-lg">
-                    {participant.name.charAt(0)}
-                  </span>
+                {/* Idle GIF Avatar - consistent with SessionRoom */}
+                <div className="w-20 h-20 mb-2 flex items-center justify-center">
+                  <img
+                    src={getIdleGif(index)}
+                    alt={`${participant.name} avatar`}
+                    className="w-full h-full object-contain"
+                    style={{
+                      imageRendering: 'pixelated'
+                    }}
+                  />
                 </div>
                 <p className={cn(
                   "text-sm font-medium",

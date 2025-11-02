@@ -14,8 +14,8 @@ const taskIcons = {
 
 const taskColors = {
   exercise: 'text-green-600',
-  medication: 'text-blue-600',
-  therapy: 'text-purple-600',
+  medication: 'text-[#8573bd]',
+  therapy: 'text-[#E8B98A]',
   check: 'text-orange-600'
 }
 
@@ -51,7 +51,7 @@ export default function TodaysPlan() {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
+            className="bg-[#8573bd] h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>

@@ -54,9 +54,9 @@ const calendarEvents = [
 ]
 
 const eventTypeColors = {
-  therapy: 'bg-blue-100 text-blue-700 border-blue-200',
+  therapy: 'bg-[#EAE6F5] text-[#8573bd] border-[#8573bd]',
   checkup: 'bg-green-100 text-green-700 border-green-200',
-  exercise: 'bg-purple-100 text-purple-700 border-purple-200',
+  exercise: 'bg-orange-100 text-[#E8B98A] border-[#E8B98A]',
   consultation: 'bg-orange-100 text-orange-700 border-orange-200'
 }
 
@@ -146,7 +146,7 @@ export default function CalendarPage() {
                     onClick={() => setSelectedDate(day)}
                     className={`
                       relative p-2 h-20 border border-gray-100 hover:bg-gray-50 transition-colors
-                      ${isSelected ? 'bg-blue-50 border-blue-200' : ''}
+                      ${isSelected ? 'bg-[#EAE6F5] border-[#8573bd]' : ''}
                       ${isToday ? 'bg-yellow-50 border-yellow-200' : ''}
                     `}
                   >
@@ -154,7 +154,7 @@ export default function CalendarPage() {
                       text-sm font-medium mb-1
                       ${!isSameMonth(day, currentDate) ? 'text-gray-300' : 'text-gray-900'}
                       ${isToday ? 'text-yellow-700' : ''}
-                      ${isSelected ? 'text-blue-700' : ''}
+                      ${isSelected ? 'text-[#8573bd]' : ''}
                     `}>
                       {format(day, 'd')}
                     </div>
@@ -191,7 +191,7 @@ export default function CalendarPage() {
           {/* 选中日期信息 */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center mb-4">
-              <CalendarIcon className="w-5 h-5 text-blue-600 mr-2" />
+              <CalendarIcon className="w-5 h-5 text-[#8573bd] mr-2" />
               <h3 className="font-semibold text-gray-900">
                 {format(selectedDate, 'MMMM d, EEEE')}
               </h3>
@@ -288,7 +288,7 @@ export default function CalendarPage() {
             <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
 
             <div className="space-y-2">
-              <button className="w-full px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+              <button className="w-full px-4 py-2 bg-[#EAE6F5] text-[#8573bd] rounded-lg hover:bg-[#8573bd] hover:text-white transition-colors">
                 Book Physical Therapy
               </button>
 
@@ -296,7 +296,7 @@ export default function CalendarPage() {
                 Book Follow-up
               </button>
 
-              <button className="w-full px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors">
+              <button className="w-full px-4 py-2 bg-orange-50 text-[#E8B98A] rounded-lg hover:bg-[#E8B98A] hover:text-white transition-colors">
                 Schedule Training
               </button>
             </div>

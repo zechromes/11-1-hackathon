@@ -1,8 +1,8 @@
 'use client'
 
-import { friends, chatMessages, currentUser } from '@/lib/mockData'
+import { chatMessages, currentUser, friends } from '@/lib/mockData'
 import { cn } from '@/lib/utils'
-import { MoreVertical, UserPlus, Send, MessageCircle, User, Search } from 'lucide-react'
+import { MessageCircle, MoreVertical, Search, Send, User, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 
 // Replicating the UI components from community.tsx using existing styles
@@ -30,15 +30,15 @@ const CardContent = ({ children, className }: { children: React.ReactNode, class
 );
 
 const Avatar = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-    <div className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className)}>
-        {children}
-    </div>
+  <div className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className)}>
+    {children}
+  </div>
 );
 
 const AvatarFallback = ({ children }: { children: React.ReactNode }) => (
-    <span className="flex h-full w-full items-center justify-center rounded-full bg-gray-100">
-        {children}
-    </span>
+  <span className="flex h-full w-full items-center justify-center rounded-full bg-gray-100">
+    {children}
+  </span>
 );
 
 
@@ -93,7 +93,7 @@ export default function FriendsPage() {
   const currentMessages = selectedFriend ? messages[selectedFriend] || [] : []
   const filteredMessages = currentMessages.filter(
     msg => (msg.senderId === currentUser.id && msg.receiverId === selectedFriend) ||
-           (msg.senderId === selectedFriend && msg.receiverId === currentUser.id)
+      (msg.senderId === selectedFriend && msg.receiverId === currentUser.id)
   )
 
   return (
@@ -106,7 +106,7 @@ export default function FriendsPage() {
               <CardTitle>Friends</CardTitle>
               <CardDescription>Connect with your recovery companions</CardDescription>
             </div>
-            <button className="flex items-center justify-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+            <button className="flex items-center justify-center px-4 py-2 bg-[#EAE6F5] text-[#8573bd] rounded-lg hover:bg-[#8573bd] hover:text-white transition-colors">
               <UserPlus className="mr-2 h-4 w-4" />
               Add Friends
             </button>
@@ -133,49 +133,49 @@ export default function FriendsPage() {
           ) : (
             <div className="space-y-2">
               {filteredFriends.map((friend) => {
-              const friendMessages = messages[friend.id] || []
-              const lastMessage = friendMessages[friendMessages.length - 1]
-              const isSelected = selectedFriend === friend.id
+                const friendMessages = messages[friend.id] || []
+                const lastMessage = friendMessages[friendMessages.length - 1]
+                const isSelected = selectedFriend === friend.id
 
-              return (
-                <button
-                  key={friend.id}
-                  onClick={() => setSelectedFriend(friend.id)}
-                  className={cn(
-                    "w-full flex items-center space-x-3 p-4 rounded-lg transition-colors text-left",
-                    isSelected ? "bg-blue-50 border-2 border-blue-200" : "hover:bg-gray-50 border-2 border-transparent"
-                  )}
-                >
-                  <div className="relative">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback>
-                        <User className="w-6 h-6 text-gray-600" />
-                      </AvatarFallback>
-                    </Avatar>
-                    {friend.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                return (
+                  <button
+                    key={friend.id}
+                    onClick={() => setSelectedFriend(friend.id)}
+                    className={cn(
+                      "w-full flex items-center space-x-3 p-4 rounded-lg transition-colors text-left",
+                      isSelected ? "bg-[#EAE6F5] border-2 border-[#8573bd]" : "hover:bg-gray-50 border-2 border-transparent"
                     )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className={cn("font-medium", isSelected ? "text-blue-900" : "text-gray-900")}>
-                        {friend.name}
-                      </p>
-                      {lastMessage && (
-                        <span className="text-xs text-gray-500">
-                          {formatTime(lastMessage.timestamp)}
-                        </span>
+                  >
+                    <div className="relative">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback>
+                          <User className="w-6 h-6 text-gray-600" />
+                        </AvatarFallback>
+                      </Avatar>
+                      {friend.isOnline && (
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 truncate">{friend.injuryType}</p>
-                    {lastMessage && (
-                      <p className="text-sm text-gray-400 truncate mt-1">
-                        {lastMessage.content}
-                      </p>
-                    )}
-                  </div>
-                </button>
-              )
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className={cn("font-medium", isSelected ? "text-[#8573bd]" : "text-gray-900")}>
+                          {friend.name}
+                        </p>
+                        {lastMessage && (
+                          <span className="text-xs text-gray-500">
+                            {formatTime(lastMessage.timestamp)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">{friend.injuryType}</p>
+                      {lastMessage && (
+                        <p className="text-sm text-gray-400 truncate mt-1">
+                          {lastMessage.content}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                )
               })}
             </div>
           )}
@@ -234,12 +234,12 @@ export default function FriendsPage() {
                           className={cn(
                             "max-w-[70%] rounded-lg px-4 py-2",
                             isOwnMessage
-                              ? "bg-blue-600 text-white"
+                              ? "bg-[#8573bd] text-white"
                               : "bg-gray-100 text-gray-900"
                           )}
                         >
                           <p className="text-sm">{message.content}</p>
-                          <p className={cn("text-xs mt-1", isOwnMessage ? "text-blue-100" : "text-gray-500")}>
+                          <p className={cn("text-xs mt-1", isOwnMessage ? "text-white/70" : "text-gray-500")}>
                             {formatTime(message.timestamp)}
                           </p>
                         </div>
@@ -265,7 +265,7 @@ export default function FriendsPage() {
                   className={cn(
                     "p-2 rounded-lg transition-colors",
                     messageInput.trim()
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      ? "bg-[#8573bd] text-white hover:bg-[#E8B98A]"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   )}
                 >

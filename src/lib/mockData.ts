@@ -8,6 +8,88 @@ export interface User {
   joinDate: string
   isOnline: boolean
   lastCheckIn?: string
+  email?: string
+  role?: 'patient' | 'admin' // 添加角色字段
+}
+
+export interface PatientRiskData {
+  patientId: string
+  patientName: string
+  email: string
+  injury: string
+  weeksInTherapy: number
+  data: {
+    hepComplianceLastWeek: string // 家庭作业完成率
+    loginsLastWeek: number // 上周登录次数
+    lastCommunityPost: string // 最后一次社区发帖时间
+    recentAppointments: {
+      lastMinuteCancellations: number
+      noShows: number
+    }
+    painScoreTrend: 'improving' | 'stagnant' | 'worsening' // 疼痛趋势
+    recentPostSentiment: string // 最近帖子情感分析
+    goalAchievementRate: string // 目标达成率
+  }
+}
+
+export interface RiskAnalysisResult {
+  riskScore: number
+  reasoning: string
+  recommendations: string[]
+}
+
+// 患者康复画像数据
+export interface PatientProfile {
+  userId: string
+  injuryType: string
+
+  // 康复阶段数据
+  injuryDate: string  // 受伤日期
+  surgeryDate?: string  // 手术日期
+  currentPhase: 'early' | 'mid' | 'late' | 'maintenance'  // 康复阶段
+  recoveryProgress: number  // 0-100%
+
+  // 训练数据
+  weeklyTrainingDays: number  // 每周训练天数
+  dailyTrainingMinutes: number  // 每日训练分钟数
+  complianceRate: number  // 依从性 0-100%
+  currentDifficulty: 'beginner' | 'intermediate' | 'advanced'
+
+  // 目标数据
+  recoveryGoal: 'work' | 'sport' | 'daily_life' | 'professional_athlete'
+  targetSport?: string  // 目标运动
+  targetTimeline: number  // 目标时间（月）
+
+  // 情感数据
+  averageSentimentScore: number  // -1 到 1
+  activityLevel: 'low' | 'medium' | 'high'
+  helpfulnessScore: number  // 帮助他人的得分
+
+  // 个人信息
+  ageGroup: '18-30' | '31-45' | '46-60' | '60+'
+  occupation?: string
+}
+
+// AI 匹配结果
+export interface AIMatchResult {
+  userId: string
+  partyId: string
+  partyName: string
+  matchScore: number  // 0-100 匹配度
+  reasons: string[]  // 匹配原因
+  expectedBenefit: string
+}
+
+// AI 推荐响应
+export interface AIRecommendationResponse {
+  recommendations: AIMatchResult[]
+  suggestNewGroup: boolean
+  newGroupSuggestion?: {
+    name: string
+    targetMembers: string[]
+    reason: string
+    estimatedSize: number
+  }
 }
 
 export interface Task {
@@ -81,6 +163,19 @@ export interface Chat {
   lastMessage?: ChatMessage
 }
 
+export interface GroupExercise {
+  id: string
+  title: string
+  exerciseType: string
+  category: string // Injury category like 'Knee', 'Shoulder', etc.
+  participantCount: number
+  maxParticipants: number
+  startTime: string
+  duration: number // in minutes
+  host: User
+  isPinned?: boolean // Pinned if matches user's training plan
+}
+
 // Current user with interests
 export const currentUser: User = {
   id: '1',
@@ -89,7 +184,64 @@ export const currentUser: User = {
   injuryType: 'Knee Rehabilitation',
   joinDate: '2024-09-15',
   isOnline: true,
-  lastCheckIn: '2024-11-01T08:30:00Z'
+  lastCheckIn: '2024-11-01T08:30:00Z',
+  email: 'alex.chen@example.com',
+  role: 'patient'
+}
+
+// 管理员账号
+export const adminUser: User = {
+  id: 'admin-1',
+  name: 'Dr. Sarah Wilson',
+  avatar: '/api/placeholder/40/40',
+  injuryType: 'AI Care Specialist',
+  joinDate: '2024-01-01',
+  isOnline: true,
+  lastCheckIn: new Date().toISOString(),
+  email: 'admin@healing-together.com',
+  role: 'admin'
+}
+
+// 登录验证接口
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+export interface LoginResult {
+  success: boolean
+  user?: User
+  redirectTo?: string
+  error?: string
+}
+
+// 模拟登录验证
+export function authenticateUser(credentials: LoginCredentials): LoginResult {
+  const { email, password } = credentials
+
+  // 管理员账号验证
+  if (email === 'admin@healing-together.com' && password === 'admin123') {
+    return {
+      success: true,
+      user: adminUser,
+      redirectTo: '/admin/patient-care'
+    }
+  }
+
+  // 普通用户账号验证（任何有效邮箱格式 + 6位以上密码）
+  const emailRegex = /\S+@\S+\.\S+/
+  if (emailRegex.test(email) && password.length >= 6) {
+    return {
+      success: true,
+      user: currentUser,
+      redirectTo: '/dashboard'
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Invalid email or password'
+  }
 }
 
 // User's interest categories (for party filtering)
@@ -386,39 +538,6 @@ export const availableParties: Party[] = [
     createdAt: '2024-08-20',
     organizer: currentUser,
     thumbnail: '/api/placeholder/400/200'
-  },
-  {
-    id: 'party-8',
-    name: 'Knee Recovery Small Group',
-    description: 'A small, intimate group for knee recovery support. Limited to 6 members for focused attention.',
-    category: 'Knee',
-    memberCount: 3,
-    maxMembers: 6,
-    createdAt: '2024-10-25',
-    organizer: friends[0],
-    thumbnail: '/api/placeholder/400/200'
-  },
-  {
-    id: 'party-9',
-    name: 'Shoulder Support Circle',
-    description: 'Small group dedicated to shoulder rehabilitation. Maximum 6 members for personalized support.',
-    category: 'Shoulder',
-    memberCount: 4,
-    maxMembers: 6,
-    createdAt: '2024-10-28',
-    organizer: friends[1],
-    thumbnail: '/api/placeholder/400/200'
-  },
-  {
-    id: 'party-10',
-    name: 'Spine Health Small Group',
-    description: 'Intimate community for spine rehabilitation. Limited to 6 members to ensure quality support.',
-    category: 'Spine',
-    memberCount: 2,
-    maxMembers: 6,
-    createdAt: '2024-11-01',
-    organizer: friends[2],
-    thumbnail: '/api/placeholder/400/200'
   }
 ]
 
@@ -579,6 +698,89 @@ export const globalPublicChat: PublicChatMessage[] = [
   }
 ]
 
+// User's training plan - 3 knee-related rehabilitation exercises
+export const userTrainingPlan: string[] = [
+  'Knee Extension Strengthening',
+  'Quadriceps Strengthening',
+  'Hamstring Flexibility'
+]
+
+// Group exercises available
+export const groupExercises: GroupExercise[] = [
+  {
+    id: '1',
+    title: 'Knee Extension Strengthening',
+    exerciseType: 'Strength Training',
+    category: 'Knee',
+    participantCount: 6,
+    maxParticipants: 6,
+    startTime: new Date(Date.now() + 10 * 60000).toISOString(), // 10 minutes from now
+    duration: 30,
+    host: friends[0],
+    isPinned: true // Matches user's training plan
+  },
+  {
+    id: '2',
+    title: 'Quadriceps Strengthening',
+    exerciseType: 'Strength Training',
+    category: 'Knee',
+    participantCount: 2,
+    maxParticipants: 6,
+    startTime: new Date(Date.now() + 20 * 60000).toISOString(), // 20 minutes from now
+    duration: 30,
+    host: friends[1],
+    isPinned: true // Matches user's training plan
+  },
+  {
+    id: '3',
+    title: 'Hamstring Flexibility',
+    exerciseType: 'Strength Training',
+    category: 'Knee',
+    participantCount: 4,
+    maxParticipants: 6,
+    startTime: new Date(Date.now() + 30 * 60000).toISOString(), // 30 minutes from now
+    duration: 30,
+    host: friends[2],
+    isPinned: true // Matches user's training plan
+  },
+  {
+    id: '4',
+    title: 'Shoulder Range of Motion',
+    exerciseType: 'Strength Training',
+    category: 'Shoulder',
+    participantCount: 2,
+    maxParticipants: 6,
+    startTime: new Date(Date.now() + 15 * 60000).toISOString(),
+    duration: 30,
+    host: friends[3],
+    isPinned: false
+  },
+  {
+    id: '5',
+    title: 'Core Stability Training',
+    exerciseType: 'Strength Training',
+    category: 'Spine',
+    participantCount: 1,
+    maxParticipants: 6,
+    startTime: new Date(Date.now() + 25 * 60000).toISOString(),
+    duration: 30,
+    host: friends[4],
+    isPinned: false
+  },
+  {
+    id: '6',
+    title: 'Ankle Mobility Exercises',
+    exerciseType: 'Strength Training',
+    category: 'Ankle',
+    participantCount: 3,
+    maxParticipants: 6,
+    startTime: new Date(Date.now() + 35 * 60000).toISOString(),
+    duration: 30,
+    host: friends[0],
+    isPinned: false
+  }
+]
+
 // Navigation menu items
 export interface NavigationItem {
   name: string
@@ -615,7 +817,7 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   {
-    name: 'Group Session',
+    name: 'Group Exercise',
     href: '/dashboard/session',
     icon: 'Video'
   },
@@ -630,3 +832,357 @@ export const navigationItems: NavigationItem[] = [
     icon: 'Calendar'
   }
 ]
+
+// Mock patient risk data for AI analysis
+export const mockPatientRiskData: PatientRiskData[] = [
+  {
+    patientId: '1',
+    patientName: 'Alex Chen',
+    email: 'alex.chen@example.com',
+    injury: 'Knee Rehabilitation',
+    weeksInTherapy: 8,
+    data: {
+      hepComplianceLastWeek: '85%',
+      loginsLastWeek: 5,
+      lastCommunityPost: '2 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 0,
+        noShows: 0
+      },
+      painScoreTrend: 'improving',
+      recentPostSentiment: 'Positive. Recent post: "Feeling much better this week! The exercises are really helping."',
+      goalAchievementRate: '80%'
+    }
+  },
+  {
+    patientId: '2',
+    patientName: 'Sarah Johnson',
+    email: 'yangqx0925@163.com',
+    injury: 'Shoulder Rehabilitation',
+    weeksInTherapy: 6,
+    data: {
+      hepComplianceLastWeek: '35%',
+      loginsLastWeek: 1,
+      lastCommunityPost: '20 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 1,
+        noShows: 0
+      },
+      painScoreTrend: 'stagnant',
+      recentPostSentiment: 'Negative. Recent post: "Feeling like this week had no progress, shoulder is still the same, getting a bit discouraged."',
+      goalAchievementRate: '40%'
+    }
+  },
+  {
+    patientId: '3',
+    patientName: 'Palm',
+    email: 'rsuksawasdi@gmail.com',
+    injury: 'Spine Rehabilitation',
+    weeksInTherapy: 12,
+    data: {
+      hepComplianceLastWeek: '20%',
+      loginsLastWeek: 0,
+      lastCommunityPost: '35 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 2,
+        noShows: 1
+      },
+      painScoreTrend: 'worsening',
+      recentPostSentiment: 'Very negative. Recent post: "This is not working. Pain is getting worse and I am losing hope."',
+      goalAchievementRate: '15%'
+    }
+  },
+  {
+    patientId: '4',
+    patientName: 've',
+    email: 'vedrosuwandi@gmail.com',
+    injury: 'Ankle Rehabilitation',
+    weeksInTherapy: 4,
+    data: {
+      hepComplianceLastWeek: '70%',
+      loginsLastWeek: 3,
+      lastCommunityPost: '5 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 0,
+        noShows: 0
+      },
+      painScoreTrend: 'improving',
+      recentPostSentiment: 'Neutral. Recent post: "Making steady progress, some days are better than others."',
+      goalAchievementRate: '65%'
+    }
+  },
+  {
+    patientId: '5',
+    patientName: 'Ge',
+    email: 'gegeardiansyah@gmail.com',
+    injury: 'ACL Tear Recovery',
+    weeksInTherapy: 8,
+    data: {
+      hepComplianceLastWeek: '45%',
+      loginsLastWeek: 2,
+      lastCommunityPost: '15 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 1,
+        noShows: 0
+      },
+      painScoreTrend: 'stagnant',
+      recentPostSentiment: 'Frustrated. Recent post: "Feeling overwhelmed with work and rehab. Hard to find time for exercises."',
+      goalAchievementRate: '50%'
+    }
+  },
+  {
+    patientId: '6',
+    patientName: 'Lisa Chen',
+    email: 'lisa.chen@example.com',
+    injury: 'Rotator Cuff Repair',
+    weeksInTherapy: 10,
+    data: {
+      hepComplianceLastWeek: '30%',
+      loginsLastWeek: 0,
+      lastCommunityPost: '28 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 0,
+        noShows: 2
+      },
+      painScoreTrend: 'worsening',
+      recentPostSentiment: 'Concerned. Recent post: "Not sure if the exercises are right for me. Shoulder feels more painful lately."',
+      goalAchievementRate: '35%'
+    }
+  },
+  {
+    patientId: '7',
+    patientName: 'Marcus Thompson',
+    email: 'marcus.t@example.com',
+    injury: 'Hip Replacement Recovery',
+    weeksInTherapy: 5,
+    data: {
+      hepComplianceLastWeek: '55%',
+      loginsLastWeek: 1,
+      lastCommunityPost: '12 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 2,
+        noShows: 0
+      },
+      painScoreTrend: 'stagnant',
+      recentPostSentiment: 'Anxious. Recent post: "Progress feels slow. Expected to be further along by now. Wondering if this is normal?"',
+      goalAchievementRate: '48%'
+    }
+  },
+  {
+    patientId: '8',
+    patientName: 'Nina Patel',
+    email: 'nina.patel@example.com',
+    injury: 'Meniscus Repair',
+    weeksInTherapy: 3,
+    data: {
+      hepComplianceLastWeek: '25%',
+      loginsLastWeek: 1,
+      lastCommunityPost: '18 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 1,
+        noShows: 1
+      },
+      painScoreTrend: 'worsening',
+      recentPostSentiment: 'Discouraged. Recent post: "Too busy with family responsibilities. Knee still hurts when I do the exercises."',
+      goalAchievementRate: '30%'
+    }
+  },
+  {
+    patientId: '9',
+    patientName: 'David Kim',
+    email: 'david.kim@example.com',
+    injury: 'Elbow Tendonitis',
+    weeksInTherapy: 7,
+    data: {
+      hepComplianceLastWeek: '40%',
+      loginsLastWeek: 2,
+      lastCommunityPost: '22 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 0,
+        noShows: 0
+      },
+      painScoreTrend: 'stagnant',
+      recentPostSentiment: 'Neutral but concerned. Recent post: "Elbow feels the same. Not worse but not better either. Getting bored with exercises."',
+      goalAchievementRate: '45%'
+    }
+  },
+  {
+    patientId: '10',
+    patientName: 'Rachel Green',
+    email: 'rachel.green@example.com',
+    injury: 'Lower Back Pain Management',
+    weeksInTherapy: 9,
+    data: {
+      hepComplianceLastWeek: '15%',
+      loginsLastWeek: 0,
+      lastCommunityPost: '40 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 3,
+        noShows: 1
+      },
+      painScoreTrend: 'worsening',
+      recentPostSentiment: 'Very frustrated. Recent post: "Nothing seems to help. Tried everything but back pain is still there. Feeling defeated."',
+      goalAchievementRate: '20%'
+    }
+  },
+  {
+    patientId: '11',
+    patientName: 'Thomas Anderson',
+    email: 'thomas.a@example.com',
+    injury: 'Wrist Fracture Recovery',
+    weeksInTherapy: 6,
+    data: {
+      hepComplianceLastWeek: '50%',
+      loginsLastWeek: 2,
+      lastCommunityPost: '10 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 1,
+        noShows: 0
+      },
+      painScoreTrend: 'stagnant',
+      recentPostSentiment: 'Mixed feelings. Recent post: "Wrist movement improving slightly but range of motion still limited. Getting impatient."',
+      goalAchievementRate: '52%'
+    }
+  },
+  {
+    patientId: '12',
+    patientName: 'Sophia Martinez',
+    email: 'sophia.m@example.com',
+    injury: 'Hamstring Strain Recovery',
+    weeksInTherapy: 2,
+    data: {
+      hepComplianceLastWeek: '35%',
+      loginsLastWeek: 1,
+      lastCommunityPost: '14 days ago',
+      recentAppointments: {
+        lastMinuteCancellations: 0,
+        noShows: 1
+      },
+      painScoreTrend: 'stagnant',
+      recentPostSentiment: 'Uncertain. Recent post: "New to this. Not sure if I am doing exercises correctly. Afraid of re-injury."',
+      goalAchievementRate: '38%'
+    }
+  }
+]
+
+// 患者康复画像数据
+export const patientProfiles: PatientProfile[] = [
+  {
+    userId: '1',
+    injuryType: 'Knee Rehabilitation',
+    injuryDate: '2024-08-15',
+    surgeryDate: '2024-08-20',
+    currentPhase: 'mid',
+    recoveryProgress: 42,
+    weeklyTrainingDays: 5,
+    dailyTrainingMinutes: 45,
+    complianceRate: 78,
+    currentDifficulty: 'intermediate',
+    recoveryGoal: 'sport',
+    targetSport: 'Basketball',
+    targetTimeline: 6,
+    averageSentimentScore: 0.3,
+    activityLevel: 'high',
+    helpfulnessScore: 7,
+    ageGroup: '18-30',
+    occupation: 'Software Engineer'
+  },
+  {
+    userId: '2',
+    injuryType: 'Shoulder Impingement',
+    injuryDate: '2024-07-10',
+    currentPhase: 'mid',
+    recoveryProgress: 55,
+    weeklyTrainingDays: 4,
+    dailyTrainingMinutes: 30,
+    complianceRate: 85,
+    currentDifficulty: 'intermediate',
+    recoveryGoal: 'work',
+    targetTimeline: 4,
+    averageSentimentScore: 0.6,
+    activityLevel: 'medium',
+    helpfulnessScore: 9,
+    ageGroup: '31-45',
+    occupation: 'Teacher'
+  },
+  {
+    userId: '3',
+    injuryType: 'Knee Rehabilitation',
+    injuryDate: '2024-08-01',
+    surgeryDate: '2024-08-05',
+    currentPhase: 'mid',
+    recoveryProgress: 38,
+    weeklyTrainingDays: 6,
+    dailyTrainingMinutes: 50,
+    complianceRate: 82,
+    currentDifficulty: 'intermediate',
+    recoveryGoal: 'sport',
+    targetSport: 'Basketball',
+    targetTimeline: 7,
+    averageSentimentScore: 0.1,
+    activityLevel: 'high',
+    helpfulnessScore: 5,
+    ageGroup: '18-30',
+    occupation: 'Student'
+  },
+  {
+    userId: '4',
+    injuryType: 'Ankle Sprain Recovery',
+    injuryDate: '2024-09-20',
+    currentPhase: 'early',
+    recoveryProgress: 25,
+    weeklyTrainingDays: 3,
+    dailyTrainingMinutes: 20,
+    complianceRate: 45,
+    currentDifficulty: 'beginner',
+    recoveryGoal: 'daily_life',
+    targetTimeline: 3,
+    averageSentimentScore: -0.2,
+    activityLevel: 'low',
+    helpfulnessScore: 3,
+    ageGroup: '46-60',
+    occupation: 'Office Worker'
+  },
+  {
+    userId: '5',
+    injuryType: 'Hip Replacement Recovery',
+    injuryDate: '2024-06-15',
+    surgeryDate: '2024-06-20',
+    currentPhase: 'late',
+    recoveryProgress: 75,
+    weeklyTrainingDays: 5,
+    dailyTrainingMinutes: 40,
+    complianceRate: 92,
+    currentDifficulty: 'advanced',
+    recoveryGoal: 'daily_life',
+    targetTimeline: 2,
+    averageSentimentScore: 0.8,
+    activityLevel: 'high',
+    helpfulnessScore: 10,
+    ageGroup: '60+',
+    occupation: 'Retired'
+  },
+  {
+    userId: '6',
+    injuryType: 'Knee Rehabilitation',
+    injuryDate: '2024-09-01',
+    surgeryDate: '2024-09-05',
+    currentPhase: 'early',
+    recoveryProgress: 20,
+    weeklyTrainingDays: 4,
+    dailyTrainingMinutes: 35,
+    complianceRate: 65,
+    currentDifficulty: 'beginner',
+    recoveryGoal: 'sport',
+    targetSport: 'Soccer',
+    targetTimeline: 8,
+    averageSentimentScore: -0.1,
+    activityLevel: 'medium',
+    helpfulnessScore: 4,
+    ageGroup: '18-30',
+    occupation: 'Professional Athlete'
+  }
+]
+
+// 当前用户的画像数据
+export const currentUserProfile: PatientProfile = patientProfiles[0]

@@ -1,5 +1,6 @@
 'use client'
 
+import { authenticateUser, LoginCredentials } from '@/lib/mockData'
 import { cn } from '@/lib/utils'
 import { Chrome, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -58,9 +59,25 @@ export default function LoginPage() {
 
     // Simulate API call
     setTimeout(() => {
+      const credentials: LoginCredentials = {
+        email: formData.email,
+        password: formData.password
+      }
+
+      const result = authenticateUser(credentials)
+
       setIsLoading(false)
-      // For demo purposes, accept any valid email/password
-      router.push('/dashboard')
+
+      if (result.success && result.redirectTo) {
+        // 根据用户角色跳转到不同页面
+        router.push(result.redirectTo)
+      } else {
+        // 显示错误信息
+        setErrors({
+          email: result.error || 'Login failed',
+          password: ' ' // 避免重复显示错误
+        })
+      }
     }, 1500)
   }
 
@@ -74,13 +91,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#EAE6F5] via-white to-[#EAE6F5] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-[#8573bd] rounded-2xl flex items-center justify-center mx-auto mb-4">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded"></div>
+              <div className="w-4 h-4 bg-[#E8B98A] rounded"></div>
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
@@ -106,7 +123,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   className={cn(
-                    "block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all",
+                    "block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#8573bd] focus:border-transparent transition-all",
                     errors.email
                       ? "border-red-300 focus:ring-red-500"
                       : "border-gray-300"
@@ -135,7 +152,7 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleInputChange}
                   className={cn(
-                    "block w-full pl-10 pr-10 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all",
+                    "block w-full pl-10 pr-10 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#8573bd] focus:border-transparent transition-all",
                     errors.password
                       ? "border-red-300 focus:ring-red-500"
                       : "border-gray-300"
@@ -166,7 +183,7 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-[#8573bd] focus:ring-[#8573bd] border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                   Remember me
@@ -174,7 +191,7 @@ export default function LoginPage() {
               </div>
               <button
                 type="button"
-                className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                className="text-sm text-[#8573bd] hover:text-[#E8B98A] font-medium"
               >
                 Forgot password?
               </button>
@@ -188,7 +205,7 @@ export default function LoginPage() {
                 "w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white transition-all",
                 isLoading
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  : "bg-[#8573bd] hover:bg-[#E8B98A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8573bd]"
               )}
             >
               {isLoading ? (
@@ -224,7 +241,7 @@ export default function LoginPage() {
                 "w-full flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white transition-all",
                 isLoading
                   ? "cursor-not-allowed opacity-50"
-                  : "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  : "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8573bd]"
               )}
             >
               <Chrome className="w-5 h-5 mr-3 text-gray-500" />
@@ -238,7 +255,7 @@ export default function LoginPage() {
               Don't have an account?{' '}
               <button
                 type="button"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-[#8573bd] hover:text-[#E8B98A]"
                 onClick={() => {
                   // For demo, just redirect to dashboard
                   router.push('/dashboard')
@@ -251,14 +268,31 @@ export default function LoginPage() {
         </div>
 
         {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Credentials</h3>
-          <p className="text-xs text-blue-700">
-            Use any valid email format and password (6+ characters) to sign in
-          </p>
-          <p className="text-xs text-blue-600 mt-1">
-            Example: demo@example.com / password123
-          </p>
+        <div className="mt-6 space-y-3">
+          {/* Admin Account */}
+          <div className="p-4 bg-[#EAE6F5] rounded-lg border border-[#8573bd]">
+            <h3 className="text-sm font-medium text-gray-900 mb-2">🔧 Admin Account</h3>
+            <p className="text-xs text-gray-700 mb-1">
+              <strong>Email:</strong> admin@healing-together.com
+            </p>
+            <p className="text-xs text-gray-700">
+              <strong>Password:</strong> admin123
+            </p>
+            <p className="text-xs text-[#8573bd] mt-1 italic">
+              → Redirects to AI Patient Analysis Dashboard
+            </p>
+          </div>
+
+          {/* Regular User */}
+          <div className="p-4 bg-orange-50 rounded-lg border border-[#E8B98A]">
+            <h3 className="text-sm font-medium text-gray-900 mb-2">👤 Patient Account</h3>
+            <p className="text-xs text-gray-700">
+              Use any valid email format and password (6+ characters)
+            </p>
+            <p className="text-xs text-[#E8B98A] mt-1">
+              Example: demo@example.com / password123 → Dashboard
+            </p>
+          </div>
         </div>
       </div>
     </div>

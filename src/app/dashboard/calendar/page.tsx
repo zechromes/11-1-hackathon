@@ -1,14 +1,64 @@
 'use client'
 
 import { addMonths, eachDayOfInterval, endOfMonth, format, isSameDay, isSameMonth, startOfMonth, subMonths } from 'date-fns'
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, User } from 'lucide-react'
-import { useState } from 'react'
-import { useCalendar } from '@/lib/CalendarContext'
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, User, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+
+
+
+// Mock calendar event data
+const initialcalendarEvents = [
+  {
+    id: '1',
+    title: 'Physical Therapy',
+    date: new Date(2025, 10, 1, 14, 0), // 11月1日 14:00
+    duration: 60,
+    type: 'therapy',
+    location: 'Rehabilitation Center A',
+    therapist: 'Dr. Li'
+  },
+  {
+    id: '2',
+    title: 'Follow-up Appointment',
+    date: new Date(2025, 10, 5, 9, 30), // 11月5日 9:30
+    duration: 30,
+    type: 'checkup',
+    location: 'Orthopedic Clinic',
+    doctor: 'Dr. Wang'
+  },
+  {
+    id: '3',
+    title: 'Rehabilitation Training',
+    date: new Date(2025, 10, 8, 16, 0), // 11月8日 16:00
+    duration: 45,
+    type: 'exercise',
+    location: 'Training Room B',
+    trainer: 'Coach Zhang'
+  },
+  {
+    id: '4',
+    title: 'Nutrition Consultation',
+    date: new Date(2025, 10, 12, 10, 0), // 11月12日 10:00
+    duration: 30,
+    type: 'consultation',
+    location: 'Nutrition Department',
+    nutritionist: 'Nutritionist Chen'
+  },
+  {
+    id: '5',
+    title: 'Physical Therapy',
+    date: new Date(2025, 10, 15, 14, 0), // 11月15日 14:00
+    duration: 60,
+    type: 'therapy',
+    location: 'Rehabilitation Center A',
+    therapist: 'Dr. Li'
+  }
+]
 
 const eventTypeColors = {
-  therapy: 'bg-[#EAE6F5] text-[#8573bd] border-[#8573bd]',
+  therapy: 'bg-blue-100 text-blue-700 border-blue-200',
   checkup: 'bg-green-100 text-green-700 border-green-200',
-  exercise: 'bg-orange-100 text-[#E8B98A] border-[#E8B98A]',
+  exercise: 'bg-purple-100 text-purple-700 border-purple-200',
   consultation: 'bg-orange-100 text-orange-700 border-orange-200'
 }
 
@@ -24,6 +74,41 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
 
+  // 添加这一行 // Original events to state
+  const [calendarEvents, setCalendarEvents] = useState(initialcalendarEvents)
+
+  const [showModal, setShowModal] = useState(false)
+  const [formData, setFormData] = useState({
+    date: format(new Date(), 'yyyy-MM-dd'),
+    time: '14:00',
+    duration: 60,
+    therapist: 'Dr. Li',
+    location: 'Rehabilitation Center A'
+  })
+
+  // 从 localStorage 加载数据
+  useEffect(() => {
+    const savedEvents = localStorage.getItem('calendarEvents')
+    
+    if (savedEvents) {
+      try {
+        const parsedEvents = JSON.parse(savedEvents)
+        const eventsWithDates = parsedEvents.map((event: any) => ({
+          ...event,
+          date: new Date(event.date)
+        }))
+        setCalendarEvents(eventsWithDates)
+      } catch (error) {
+        console.error('Failed to load events from localStorage:', error)
+      }
+    }
+  }, [])
+
+  // 保存数据到 localStorage
+  useEffect(() => {
+    localStorage.setItem('calendarEvents', JSON.stringify(calendarEvents))
+  }, [calendarEvents])
+
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
@@ -35,6 +120,41 @@ export default function CalendarPage() {
   const goToNextMonth = () => {
     setCurrentDate(addMonths(currentDate, 1))
   }
+
+  const handleBookPhysicalTherapy = () => {
+    setFormData({
+      date: format(selectedDate, 'yyyy-MM-dd'), // 使用选中的日期
+      time: '14:00',
+      duration: 60,
+      therapist: 'Dr. Li',
+      location: 'Rehabilitation Center A'
+    })
+    setShowModal(true) // 打开弹窗
+  }
+
+  const handleSubmitBooking = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const newEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Physical Therapy',
+      date: new Date(`${formData.date}T${formData.time}`),
+      duration: formData.duration,
+      type: 'therapy' as const,
+      location: formData.location,
+      therapist: formData.therapist
+    }
+    
+    setCalendarEvents(prev => [...prev, newEvent])
+    setShowModal(false)
+    alert('Successfully booked')
+  }
+
+  // 👇 添加这个函数 - 更新表单数据
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
 
   const getEventsForDate = (date: Date) => {
     return calendarEvents.filter(event =>
@@ -99,7 +219,7 @@ export default function CalendarPage() {
                     onClick={() => setSelectedDate(day)}
                     className={`
                       relative p-2 h-20 border border-gray-100 hover:bg-gray-50 transition-colors
-                      ${isSelected ? 'bg-[#EAE6F5] border-[#8573bd]' : ''}
+                      ${isSelected ? 'bg-blue-50 border-blue-200' : ''}
                       ${isToday ? 'bg-yellow-50 border-yellow-200' : ''}
                     `}
                   >
@@ -107,7 +227,7 @@ export default function CalendarPage() {
                       text-sm font-medium mb-1
                       ${!isSameMonth(day, currentDate) ? 'text-gray-300' : 'text-gray-900'}
                       ${isToday ? 'text-yellow-700' : ''}
-                      ${isSelected ? 'text-[#8573bd]' : ''}
+                      ${isSelected ? 'text-blue-700' : ''}
                     `}>
                       {format(day, 'd')}
                     </div>
@@ -144,7 +264,7 @@ export default function CalendarPage() {
           {/* 选中日期信息 */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center mb-4">
-              <CalendarIcon className="w-5 h-5 text-[#8573bd] mr-2" />
+              <CalendarIcon className="w-5 h-5 text-blue-600 mr-2" />
               <h3 className="font-semibold text-gray-900">
                 {format(selectedDate, 'MMMM d, EEEE')}
               </h3>
@@ -170,7 +290,7 @@ export default function CalendarPage() {
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center">
                         <Clock className="w-3 h-3 mr-2" />
-                        {format(event.date, 'HH:mm')} ({event.duration}分钟)
+                        {format(event.date, 'HH:mm')} ({event.duration}mins)
                       </div>
 
                       <div className="flex items-center">
@@ -241,7 +361,9 @@ export default function CalendarPage() {
             <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
 
             <div className="space-y-2">
-              <button className="w-full px-4 py-2 bg-[#EAE6F5] text-[#8573bd] rounded-lg hover:bg-[#8573bd] hover:text-white transition-colors">
+              <button
+                onClick={handleBookPhysicalTherapy} 
+                className="w-full px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
                 Book Physical Therapy
               </button>
 
@@ -249,13 +371,128 @@ export default function CalendarPage() {
                 Book Follow-up
               </button>
 
-              <button className="w-full px-4 py-2 bg-orange-50 text-[#E8B98A] rounded-lg hover:bg-[#E8B98A] hover:text-white transition-colors">
+              <button className="w-full px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors">
                 Schedule Training
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* 预约表单 */}
+      {showModal && (
+        <div 
+          className="fixed inset-0 bg-white bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setShowModal(false)}  
+        >
+          <div 
+            className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 关闭按钮 X */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              type="button"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Book Physical Therapy</h3>
+            
+            <form onSubmit={handleSubmitBooking} className="space-y-4">
+              {/* 日期 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={e => handleInputChange('date', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              {/* 时间 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                <input
+                  type="time"
+                  value={formData.time}
+                  onChange={e => handleInputChange('time', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              {/* 时长 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                <select
+                  value={formData.duration}
+                  onChange={e => handleInputChange('duration', Number(e.target.value))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value={30}>30 minutes</option>
+                  <option value={60}>60 minutes</option>
+                  <option value={90}>90 minutes</option>
+                  <option value={120}>120 minutes</option>
+                </select>
+              </div>
+
+              {/* 治疗师 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Therapist</label>
+                <select
+                  value={formData.therapist}
+                  onChange={e => handleInputChange('therapist', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Dr. Li">Dr. Li</option>
+                  <option value="Dr. Wang">Dr. Wang</option>
+                  <option value="Dr. Zhang">Dr. Zhang</option>
+                  <option value="Dr. Chen">Dr. Chen</option>
+                </select>
+              </div>
+
+              {/* 地点 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <select
+                  value={formData.location}
+                  onChange={e => handleInputChange('location', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Rehabilitation Center A">Rehabilitation Center A</option>
+                  <option value="Rehabilitation Center B">Rehabilitation Center B</option>
+                  <option value="Orthopedic Clinic">Orthopedic Clinic</option>
+                  <option value="Training Room B">Training Room B</option>
+                </select>
+              </div>
+
+              {/* 按钮组 */}
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Confirm Booking
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+

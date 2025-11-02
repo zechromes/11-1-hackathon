@@ -70,6 +70,7 @@ const eventTypeNames = {
 }
 
 export default function CalendarPage() {
+  const { events: calendarEvents } = useCalendar()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
 

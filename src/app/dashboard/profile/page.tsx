@@ -1,27 +1,19 @@
 'use client'
 
-<<<<<<< HEAD
+import { CalendarEvent, useCalendar } from '@/lib/CalendarContext'
 import { currentUser, exercisePlanItems } from '@/lib/mockData'
-import { useCalendar, CalendarEvent } from '@/lib/CalendarContext'
 import { cn } from '@/lib/utils'
-import { Calendar, Download, Dumbbell, Edit, FileText, User, RefreshCw, CheckCircle } from 'lucide-react'
-=======
-import { currentUser } from '@/lib/mockData'
-import { Calendar, Download, Dumbbell, Edit, Eye, EyeOff, FileText, Shield, User } from 'lucide-react'
->>>>>>> d12278e (fix: profile page add privacy settings)
+import { Calendar, CheckCircle, Download, Dumbbell, Edit, Eye, EyeOff, FileText, RefreshCw, Shield, User } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
-<<<<<<< HEAD
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncSuccess, setSyncSuccess] = useState(false)
   const { addEvents, clearSyncedEvents } = useCalendar()
-=======
   const [hideFromFriends, setHideFromFriends] = useState(false)
->>>>>>> d12278e (fix: profile page add privacy settings)
 
   // Mock data for the profile
   const nextAppointment = {
@@ -46,7 +38,6 @@ export default function ProfilePage() {
     setIsEditing(!isEditing)
   }
 
-<<<<<<< HEAD
   const handleSynchronizePlan = () => {
     setIsSyncing(true)
     setSyncSuccess(false)
@@ -72,7 +63,7 @@ export default function ProfilePage() {
             for (let day = 0; day < 7; day++) {
               const eventDate = new Date(startDate)
               eventDate.setDate(eventDate.getDate() + (week * 7) + day)
-              
+
               // Only add events that are today or in the future
               if (eventDate >= today) {
                 const [hours, minutes] = item.scheduledTime.split(':').map(Number)
@@ -98,7 +89,7 @@ export default function ProfilePage() {
           for (let week = 0; week < item.repeatForWeeks; week++) {
             const eventDate = new Date(startDate)
             eventDate.setDate(eventDate.getDate() + (week * 7))
-            
+
             // Only add events that are today or in the future
             if (eventDate >= today) {
               const [hours, minutes] = item.scheduledTime.split(':').map(Number)
@@ -121,7 +112,7 @@ export default function ProfilePage() {
         } else {
           // Single event (no frequency)
           const eventDate = new Date(item.scheduledDate)
-          
+
           // Only add if today or in the future
           if (eventDate >= today) {
             const [hours, minutes] = item.scheduledTime.split(':').map(Number)
@@ -148,7 +139,7 @@ export default function ProfilePage() {
         addEvents(newEvents)
         setSyncSuccess(true)
         setTimeout(() => setSyncSuccess(false), 3000)
-        
+
         // Show success toast
         toast.success(
           `Successfully synchronized ${newEvents.length} events to your calendar!`,
@@ -172,7 +163,8 @@ export default function ProfilePage() {
 
       setIsSyncing(false)
     }, 1000)
-=======
+  }
+
   const handleTogglePrivacy = () => {
     setHideFromFriends(!hideFromFriends)
     // Show confirmation message
@@ -180,7 +172,6 @@ export default function ProfilePage() {
       ? '✓ Your profile is now hidden from friends'
       : '✓ Your profile is now visible to friends'
     alert(message)
->>>>>>> d12278e (fix: profile page add privacy settings)
   }
 
   return (
@@ -269,7 +260,7 @@ export default function ProfilePage() {
                 <Dumbbell className="w-5 h-5 text-[#8573bd] mr-2" />
                 <h2 className="text-lg font-semibold text-[#0F1620]">My Exercise Plan</h2>
               </div>
-              
+
               {/* Synchronize Button at Top */}
               <button
                 onClick={handleSynchronizePlan}
@@ -279,8 +270,8 @@ export default function ProfilePage() {
                   syncSuccess
                     ? "bg-green-500 text-white"
                     : isSyncing
-                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                    : "bg-[#8573bd] text-white hover:bg-[#E8B98A]"
+                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                      : "bg-[#8573bd] text-white hover:bg-[#E8B98A]"
                 )}
               >
                 {syncSuccess ? (
